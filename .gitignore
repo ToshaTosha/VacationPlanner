@@ -1,0 +1,23 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.sln.ide
+*.vs/
+*.vscode/
+*.db
+*.db-journal
+
+# Папки с зависимостями
+packages/
+project.lock.json
+project.fragment.lock.json
+*.nupkg
+
+# Логи
+*.log
+
+# Конфиденциальные файлы
+appsettings.Development.json
+appsettings.Production.json
