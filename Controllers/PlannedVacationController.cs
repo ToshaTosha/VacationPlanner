@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VacationPlanner.Api.Models;
+using VacationPlanner.Api.DTOs;
 
 namespace VacationPlanner.Api.Controllers
 {
@@ -36,18 +37,28 @@ namespace VacationPlanner.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<PlannedVacation>> PostPlannedVacation(PlannedVacation plannedVacation)
+        public async Task<ActionResult<PlannedVacation>> PostPlannedVacation(PlannedVacationDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             
-            if (!await _context.Employees.AnyAsync(e => e.EmployeeId == plannedVacation.EmployeeId))
+            if (!await _context.Employees.AnyAsync(e => e.EmployeeId == dto.EmployeeId))
                 return BadRequest("Employee not found");
 
-            if (!await _context.VacationTypes.AnyAsync(vt => vt.VacationTypeId == plannedVacation.VacationTypeId))
+            if (!await _context.VacationTypes.AnyAsync(vt => vt.VacationTypeId == dto.VacationTypeId))
                 return BadRequest("Vacation type not found");
 
-            if (plannedVacation.StartDate >= plannedVacation.EndDate)
+            if (dto.StartDate >= dto.EndDate)
                 return BadRequest("End date must be after start date");
+
+            var plannedVacation = new PlannedVacation
+            {
+                EmployeeId = dto.EmployeeId,
+                VacationTypeId = dto.VacationTypeId,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+                Status = dto.Status,
+                Comment = dto.Comment
+            };
 
             _context.PlannedVacations.Add(plannedVacation);
             await _context.SaveChangesAsync();
@@ -57,10 +68,20 @@ namespace VacationPlanner.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPlannedVacation(int id, PlannedVacation plannedVacation)
+        public async Task<IActionResult> PutPlannedVacation(int id, PlannedVacationDto dto)
         {
-            if (id != plannedVacation.PlannedVacationId) return BadRequest();
+            if (id != dto.PlannedVacationId) return BadRequest();
             if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var plannedVacation = await _context.PlannedVacations.FindAsync(id);
+            if (plannedVacation == null) return NotFound();
+
+            plannedVacation.EmployeeId = dto.EmployeeId;
+            plannedVacation.VacationTypeId = dto.VacationTypeId;
+            plannedVacation.StartDate = dto.StartDate;
+            plannedVacation.EndDate = dto.EndDate;
+            plannedVacation.Status = dto.Status;
+            plannedVacation.Comment = dto.Comment;
 
             _context.Entry(plannedVacation).State = EntityState.Modified;
             

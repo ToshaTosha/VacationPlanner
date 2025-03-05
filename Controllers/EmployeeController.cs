@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using VacationPlanner.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using BCrypt.Net;
-
+using VacationPlanner.Api.Dtos;
+using System.ComponentModel.DataAnnotations;
 namespace VacationPlanner.Api.Controllers
 {
     [Authorize]
@@ -44,7 +45,7 @@ namespace VacationPlanner.Api.Controllers
 
         // POST: api/Employees
         [HttpPost]
-        public async Task<ActionResult<Employee>> PostEmployee(Employee employee)
+        public async Task<ActionResult<Employee>> PostEmployee(CreateEmployeeDto createEmployeeDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -63,6 +64,22 @@ namespace VacationPlanner.Api.Controllers
             {
                 employee.PasswordHash = BCrypt.Net.BCrypt.HashPassword(employee.PasswordHash);
             }
+
+            var employee = new Employee
+        {
+            DepartmentId = createEmployeeDto.DepartmentId,
+            PositionId = createEmployeeDto.PositionId,
+            FirstName = createEmployeeDto.FirstName,
+            LastName = createEmployeeDto.LastName,
+            HireDate = createEmployeeDto.HireDate,
+            Email = createEmployeeDto.Email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(createEmployeeDto.PasswordHash), // Хешируем пароль
+            RoleId = createEmployeeDto.RoleId,
+            IsMultipleChildren = createEmployeeDto.IsMultipleChildren,
+            HasDisabledChild = createEmployeeDto.HasDisabledChild,
+            IsVeteran = createEmployeeDto.IsVeteran,
+            IsHonorDonor = createEmployeeDto.IsHonorDonor
+        };
 
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
