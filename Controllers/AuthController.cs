@@ -5,10 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using VacationPlanner.Api.Models;
 using BCrypt.Net;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.EntityFrameworkCore;
 
 [Route("api/[controller]")]
 [ApiController]
+[EnableCors("AllowAllOrigins")]
 public class AuthController : ControllerBase
 {
     private readonly VacationPlannerDbContext _context;
