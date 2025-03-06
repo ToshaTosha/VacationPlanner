@@ -10,6 +10,5 @@ namespace VacationPlanner.Api.DTOs
         public DateOnly StartDate { get; set; } // Изменено на DateOnly
         public DateOnly EndDate { get; set; }   // Изменено на DateOnly
         public string Comment { get; set; } = string.Empty;
-        public int PlannedVacationId { get; set; } // Добавлено для метода Put
     }
 }

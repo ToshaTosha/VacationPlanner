@@ -59,7 +59,7 @@ namespace VacationPlanner.Api.Controllers
             {
                 EmployeeId = dto.EmployeeId,
                 VacationTypeId = dto.VacationTypeId,
-                VacationStatusId = dto.VacationStatusId,
+                VacationStatusId = 1,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 Comment = dto.Comment
@@ -75,7 +75,6 @@ namespace VacationPlanner.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPlannedVacation(int id, PlannedVacationDto dto)
         {
-            if (id != dto.PlannedVacationId) return BadRequest();
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var plannedVacation = await _context.PlannedVacations.FindAsync(id);

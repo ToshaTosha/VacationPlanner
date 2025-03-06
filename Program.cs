@@ -49,7 +49,6 @@ app.UseCors("AllowAllOrigins");
 app.UseAuthorization();
 app.MapControllers();
 app.UseAuthentication();
-app.UseAuthorization();
 
 using (var scope = app.Services.CreateScope())
 {
