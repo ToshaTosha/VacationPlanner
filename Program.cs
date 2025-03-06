@@ -62,6 +62,9 @@ using (var scope = app.Services.CreateScope())
 
     var organizationSeeder = new OrganizationSeeder(context);
     organizationSeeder.Seed();
+
+    var departmentSeeder = new DepartmentSeeder(context);
+    departmentSeeder.Seed();
 }
 
 app.Run();
