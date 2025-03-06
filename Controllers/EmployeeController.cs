@@ -7,7 +7,7 @@ using VacationPlanner.Api.Dtos;
 using System.ComponentModel.DataAnnotations; 
 namespace VacationPlanner.Api.Controllers
 {
-    [Authorize]
+    // [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class EmployeesController : ControllerBase
