@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VacationPlanner.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateSchema : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -93,6 +93,19 @@ namespace VacationPlanner.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "VacationStatuses",
+                columns: table => new
+                {
+                    VacationStatusId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VacationStatuses", x => x.VacationStatusId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "VacationTypes",
                 columns: table => new
                 {
@@ -158,15 +171,14 @@ namespace VacationPlanner.Api.Migrations
                     PositionId = table.Column<int>(type: "int", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    MiddleName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     HireDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
                     IsMultipleChildren = table.Column<bool>(type: "bit", nullable: true, defaultValue: false),
                     HasDisabledChild = table.Column<bool>(type: "bit", nullable: true, defaultValue: false),
                     IsVeteran = table.Column<bool>(type: "bit", nullable: true, defaultValue: false),
-                    IsHonorDonor = table.Column<bool>(type: "bit", nullable: true, defaultValue: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RoleId = table.Column<int>(type: "int", nullable: false)
+                    IsHonorDonor = table.Column<bool>(type: "bit", nullable: true, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -222,14 +234,20 @@ namespace VacationPlanner.Api.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     EmployeeId = table.Column<int>(type: "int", nullable: false),
                     VacationTypeId = table.Column<int>(type: "int", nullable: false),
+                    VacationStatusId = table.Column<int>(type: "int", nullable: false),
                     StartDate = table.Column<DateOnly>(type: "date", nullable: false),
                     EndDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK__PlannedV__1C230134C01B9D4D", x => x.PlannedVacationId);
+                    table.ForeignKey(
+                        name: "FK_PlannedVacations_VacationStatuses_VacationStatusId",
+                        column: x => x.VacationStatusId,
+                        principalTable: "VacationStatuses",
+                        principalColumn: "VacationStatusId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK__PlannedVa__Emplo__6754599E",
                         column: x => x.EmployeeId,
@@ -288,6 +306,11 @@ namespace VacationPlanner.Api.Migrations
                 column: "EmployeeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PlannedVacations_VacationStatusId",
+                table: "PlannedVacations",
+                column: "VacationStatusId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PlannedVacations_VacationTypeId",
                 table: "PlannedVacations",
                 column: "VacationTypeId");
@@ -313,6 +336,9 @@ namespace VacationPlanner.Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "Restrictions");
+
+            migrationBuilder.DropTable(
+                name: "VacationStatuses");
 
             migrationBuilder.DropTable(
                 name: "Employees");

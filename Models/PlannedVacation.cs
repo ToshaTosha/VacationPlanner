@@ -15,12 +15,11 @@ public partial class PlannedVacation
 
     public int VacationTypeId { get; set; }
 
+    public int VacationStatusId { get; set; }
+
     public DateOnly StartDate { get; set; }
 
     public DateOnly EndDate { get; set; }
-
-    [StringLength(20)]
-    public string Status { get; set; } = null!;
 
     [StringLength(500)]
     public string? Comment { get; set; }
@@ -32,4 +31,8 @@ public partial class PlannedVacation
     [ForeignKey("VacationTypeId")]
     [InverseProperty("PlannedVacations")]
     public virtual VacationType VacationType { get; set; } = null!;
+    
+    [ForeignKey("VacationStatusId")]
+    [InverseProperty("PlannedVacations")]
+    public virtual VacationStatus VacationStatus { get; set; } = null!;
 }

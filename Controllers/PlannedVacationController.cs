@@ -22,6 +22,7 @@ namespace VacationPlanner.Api.Controllers
             return await _context.PlannedVacations
                 .Include(pv => pv.Employee)
                 .Include(pv => pv.VacationType)
+                .Include(pv => pv.VacationStatus)
                 .ToListAsync();
         }
 
@@ -31,6 +32,7 @@ namespace VacationPlanner.Api.Controllers
             var plannedVacation = await _context.PlannedVacations
                 .Include(pv => pv.Employee)
                 .Include(pv => pv.VacationType)
+                .Include(pv => pv.VacationStatus)
                 .FirstOrDefaultAsync(pv => pv.PlannedVacationId == id);
 
             return plannedVacation ?? (ActionResult<PlannedVacation>)NotFound();
@@ -47,6 +49,9 @@ namespace VacationPlanner.Api.Controllers
             if (!await _context.VacationTypes.AnyAsync(vt => vt.VacationTypeId == dto.VacationTypeId))
                 return BadRequest("Vacation type not found");
 
+            // if (!await _context.VacationStatuses.AnyAsync(vt => vt.VacationStatusId == dto.VacationStatusId))
+            //     return BadRequest("Vacation status not found");
+
             if (dto.StartDate >= dto.EndDate)
                 return BadRequest("End date must be after start date");
 
@@ -54,9 +59,9 @@ namespace VacationPlanner.Api.Controllers
             {
                 EmployeeId = dto.EmployeeId,
                 VacationTypeId = dto.VacationTypeId,
+                VacationStatusId = dto.VacationStatusId,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
-                Status = dto.Status,
                 Comment = dto.Comment
             };
 
@@ -78,9 +83,9 @@ namespace VacationPlanner.Api.Controllers
 
             plannedVacation.EmployeeId = dto.EmployeeId;
             plannedVacation.VacationTypeId = dto.VacationTypeId;
+            plannedVacation.VacationStatusId = dto.VacationStatusId;
             plannedVacation.StartDate = dto.StartDate;
             plannedVacation.EndDate = dto.EndDate;
-            plannedVacation.Status = dto.Status;
             plannedVacation.Comment = dto.Comment;
 
             _context.Entry(plannedVacation).State = EntityState.Modified;

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using VacationPlanner.Api.Models;
 using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Добавление сервисов
@@ -12,7 +13,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("EmployeeOnly", policy => 
         policy.RequireRole("Employee"));
 });
-
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -41,4 +41,16 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseAuthentication();
 app.UseAuthorization();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<VacationPlannerDbContext>();
+
+    var vacationTypeSeeder = new VacationTypeSeeder(context);
+    vacationTypeSeeder.Seed();
+
+    var vacationStatusSeeder = new VacationStatusSeeder(context);
+    vacationStatusSeeder.Seed();
+}
+
 app.Run();

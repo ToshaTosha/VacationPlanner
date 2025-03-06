@@ -4,7 +4,7 @@ using VacationPlanner.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using BCrypt.Net;
 using VacationPlanner.Api.Dtos;
-using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations; 
 namespace VacationPlanner.Api.Controllers
 {
     [Authorize]
@@ -26,7 +26,7 @@ namespace VacationPlanner.Api.Controllers
             return await _context.Employees
                 .Include(e => e.Department)
                 .Include(e => e.Position)
-                .Include(e => e.Role) // Включаем роль
+                .Include(e => e.Role)
                 .ToListAsync();
         }
 
@@ -37,55 +37,53 @@ namespace VacationPlanner.Api.Controllers
             var employee = await _context.Employees
                 .Include(e => e.Department)
                 .Include(e => e.Position)
-                .Include(e => e.Role) // Включаем роль
+                .Include(e => e.Role)
                 .FirstOrDefaultAsync(e => e.EmployeeId == id);
 
             return employee ?? (ActionResult<Employee>)NotFound();
         }
 
-        // POST: api/Employees
-        [HttpPost]
-        public async Task<ActionResult<Employee>> PostEmployee(CreateEmployeeDto createEmployeeDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+       // В EmployeesController.cs
 
-            if (!await _context.Departments.AnyAsync(d => d.DepartmentId == employee.DepartmentId))
-                return BadRequest("Department not found");
+[HttpPost]
+public async Task<ActionResult<Employee>> PostEmployee(CreateEmployeeDto createEmployeeDto)
+{
+    if (!ModelState.IsValid)
+        return BadRequest(ModelState);
 
-            if (!await _context.Positions.AnyAsync(p => p.PositionId == employee.PositionId))
-                return BadRequest("Position not found");
+    if (!await _context.Departments.AnyAsync(d => d.DepartmentId == createEmployeeDto.DepartmentId))
+        return BadRequest("Department not found");
 
-            if (!await _context.Roles.AnyAsync(r => r.RoleId == employee.RoleId))
-                return BadRequest("Role not found");
+    if (!await _context.Positions.AnyAsync(p => p.PositionId == createEmployeeDto.PositionId))
+        return BadRequest("Position not found");
 
-            // Хешируем пароль, если он передается в открытом виде
-            if (!string.IsNullOrEmpty(employee.PasswordHash))
-            {
-                employee.PasswordHash = BCrypt.Net.BCrypt.HashPassword(employee.PasswordHash);
-            }
+    if (!await _context.Roles.AnyAsync(r => r.RoleId == createEmployeeDto.RoleId))
+        return BadRequest("Role not found");
 
-            var employee = new Employee
-        {
-            DepartmentId = createEmployeeDto.DepartmentId,
-            PositionId = createEmployeeDto.PositionId,
-            FirstName = createEmployeeDto.FirstName,
-            LastName = createEmployeeDto.LastName,
-            HireDate = createEmployeeDto.HireDate,
-            Email = createEmployeeDto.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(createEmployeeDto.PasswordHash), // Хешируем пароль
-            RoleId = createEmployeeDto.RoleId,
-            IsMultipleChildren = createEmployeeDto.IsMultipleChildren,
-            HasDisabledChild = createEmployeeDto.HasDisabledChild,
-            IsVeteran = createEmployeeDto.IsVeteran,
-            IsHonorDonor = createEmployeeDto.IsHonorDonor
-        };
+    // Маппинг из DTO в Employee
+    var employee = new Employee
+    {
+        DepartmentId = createEmployeeDto.DepartmentId,
+        PositionId = createEmployeeDto.PositionId,
+        FirstName = createEmployeeDto.FirstName,
+        LastName = createEmployeeDto.LastName,
+        HireDate = createEmployeeDto.HireDate,
+        Email = createEmployeeDto.Email,
+        PasswordHash = BCrypt.Net.BCrypt.HashPassword(createEmployeeDto.PasswordHash), // Хешируем пароль
+        RoleId = createEmployeeDto.RoleId,
+        IsMultipleChildren = createEmployeeDto.IsMultipleChildren,
+        HasDisabledChild = createEmployeeDto.HasDisabledChild,
+        IsVeteran = createEmployeeDto.IsVeteran,
+        IsHonorDonor = createEmployeeDto.IsHonorDonor
+    };
 
-            _context.Employees.Add(employee);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetEmployee", new { id = employee.EmployeeId }, employee);
-        }
+    _context.Employees.Add(employee);
+    await _context.SaveChangesAsync();
+
+    // Возвращаем созданный объект (можно вернуть DTO, но в данном случае вернем Employee)
+    return CreatedAtAction("GetEmployee", new { id = employee.EmployeeId }, employee);
+}
 
         // PUT: api/Employees/5
         [HttpPut("{id}")]
@@ -114,7 +112,7 @@ namespace VacationPlanner.Api.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!EmployeeExists(id))
+                if(!EmployeeExists(id))
                     return NotFound();
                 throw;
             }

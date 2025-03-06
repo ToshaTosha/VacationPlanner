@@ -39,6 +39,8 @@ public partial class VacationPlannerDbContext : DbContext
 
     public virtual DbSet<VacationType> VacationTypes { get; set; }
 
+    public virtual DbSet<VacationStatus> VacationStatuses { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnection");
 
