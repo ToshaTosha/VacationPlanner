@@ -65,6 +65,15 @@ using (var scope = app.Services.CreateScope())
 
     var departmentSeeder = new DepartmentSeeder(context);
     departmentSeeder.Seed();
+
+    var positionSeeder = new PositionSeeder(context);
+    positionSeeder.Seed();
+
+    var roleSeeder = new RoleSeeder(context);
+    roleSeeder.Seed();
+
+    var employeeSeeder = new EmployeeSeeder(context);
+    employeeSeeder.Seed();
 }
 
 app.Run();

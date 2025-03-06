@@ -19,6 +19,9 @@ public partial class Employee
 
     [StringLength(50)]
     public string LastName { get; set; } = null!;
+    
+    [StringLength(50)]
+    public string MiddleName { get; set; } = null!;
 
     public DateOnly HireDate { get; set; }
 

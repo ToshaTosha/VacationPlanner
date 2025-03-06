@@ -12,7 +12,7 @@ using VacationPlanner.Api.Models;
 namespace VacationPlanner.Api.Migrations
 {
     [DbContext(typeof(VacationPlannerDbContext))]
-    [Migration("20250306054322_InitialCreate")]
+    [Migration("20250306162152_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -139,6 +139,11 @@ namespace VacationPlanner.Api.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("MiddleName")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");

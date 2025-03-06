@@ -67,6 +67,7 @@ public async Task<ActionResult<Employee>> PostEmployee(CreateEmployeeDto createE
         PositionId = createEmployeeDto.PositionId,
         FirstName = createEmployeeDto.FirstName,
         LastName = createEmployeeDto.LastName,
+        MiddleName = createEmployeeDto.MiddleName,
         HireDate = createEmployeeDto.HireDate,
         Email = createEmployeeDto.Email,
         PasswordHash = BCrypt.Net.BCrypt.HashPassword(createEmployeeDto.PasswordHash), // Хешируем пароль
