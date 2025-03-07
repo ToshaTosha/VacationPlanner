@@ -2,6 +2,7 @@ using VacationPlanner.Api.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BCrypt.Net;
 
 public class EmployeeSeeder
     {
@@ -31,7 +32,7 @@ public class EmployeeSeeder
                     MiddleName = "Иванов",
                     HireDate = DateOnly.FromDateTime(new DateTime(2025, 3, 6)),
                     Email = "ivan.test@example.com",
-                    PasswordHash = "hashed_password_1", 
+                    PasswordHash = "12345", 
                     IsMultipleChildren = true,
                     HasDisabledChild = true,
                     IsVeteran = true,

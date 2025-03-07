@@ -4,6 +4,7 @@ using VacationPlanner.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using BCrypt.Net;
 using VacationPlanner.Api.Dtos;
+using VacationPlanner.Api.Utils;
 using System.ComponentModel.DataAnnotations; 
 namespace VacationPlanner.Api.Controllers
 {
@@ -13,10 +14,12 @@ namespace VacationPlanner.Api.Controllers
     public class EmployeesController : ControllerBase
     {
         private readonly VacationPlannerDbContext _context;
+        private readonly UserUtils _userUtils;
 
         public EmployeesController(VacationPlannerDbContext context)
         {
             _context = context;
+            _userUtils = new UserUtils();
         }
 
         // GET: api/Employees
@@ -45,46 +48,59 @@ namespace VacationPlanner.Api.Controllers
 
        // В EmployeesController.cs
 
-[HttpPost]
-public async Task<ActionResult<Employee>> PostEmployee(CreateEmployeeDto createEmployeeDto)
-{
-    if (!ModelState.IsValid)
-        return BadRequest(ModelState);
+        [HttpPost]
+        public async Task<ActionResult<Employee>> PostEmployee(CreateEmployeeDto createEmployeeDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-    if (!await _context.Departments.AnyAsync(d => d.DepartmentId == createEmployeeDto.DepartmentId))
-        return BadRequest("Department not found");
+            if (!await _context.Departments.AnyAsync(d => d.DepartmentId == createEmployeeDto.DepartmentId))
+                return BadRequest("Department not found");
 
-    if (!await _context.Positions.AnyAsync(p => p.PositionId == createEmployeeDto.PositionId))
-        return BadRequest("Position not found");
+            if (!await _context.Positions.AnyAsync(p => p.PositionId == createEmployeeDto.PositionId))
+                return BadRequest("Position not found");
 
-    if (!await _context.Roles.AnyAsync(r => r.RoleId == createEmployeeDto.RoleId))
-        return BadRequest("Role not found");
+            if (!await _context.Roles.AnyAsync(r => r.RoleId == createEmployeeDto.RoleId))
+                return BadRequest("Role not found");
 
-    // Маппинг из DTO в Employee
-    var employee = new Employee
-    {
-        DepartmentId = createEmployeeDto.DepartmentId,
-        PositionId = createEmployeeDto.PositionId,
-        FirstName = createEmployeeDto.FirstName,
-        LastName = createEmployeeDto.LastName,
-        MiddleName = createEmployeeDto.MiddleName,
-        HireDate = createEmployeeDto.HireDate,
-        Email = createEmployeeDto.Email,
-        PasswordHash = BCrypt.Net.BCrypt.HashPassword(createEmployeeDto.PasswordHash), // Хешируем пароль
-        RoleId = createEmployeeDto.RoleId,
-        IsMultipleChildren = createEmployeeDto.IsMultipleChildren,
-        HasDisabledChild = createEmployeeDto.HasDisabledChild,
-        IsVeteran = createEmployeeDto.IsVeteran,
-        IsHonorDonor = createEmployeeDto.IsHonorDonor
-    };
+            if (string.IsNullOrWhiteSpace(createEmployeeDto.Email))
+                {
+                    return BadRequest("Email cannot be null or empty.");
+                }
 
 
-    _context.Employees.Add(employee);
-    await _context.SaveChangesAsync();
+            // Генерация временного пароля
+            string temporaryPassword = _userUtils.GenerateTemporaryPassword();
+            
+            // Хэширование временного пароля
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(temporaryPassword);
 
-    // Возвращаем созданный объект (можно вернуть DTO, но в данном случае вернем Employee)
-    return CreatedAtAction("GetEmployee", new { id = employee.EmployeeId }, employee);
-}
+            // Маппинг из DTO в Employee
+            var employee = new Employee
+            {
+                DepartmentId = createEmployeeDto.DepartmentId,
+                PositionId = createEmployeeDto.PositionId,
+                FirstName = createEmployeeDto.FirstName,
+                LastName = createEmployeeDto.LastName,
+                MiddleName = createEmployeeDto.MiddleName,
+                HireDate = createEmployeeDto.HireDate,
+                Email = createEmployeeDto.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(createEmployeeDto.PasswordHash),
+                RoleId = createEmployeeDto.RoleId,
+                IsMultipleChildren = createEmployeeDto.IsMultipleChildren,
+                HasDisabledChild = createEmployeeDto.HasDisabledChild,
+                IsVeteran = createEmployeeDto.IsVeteran,
+                IsHonorDonor = createEmployeeDto.IsHonorDonor
+            };
+
+            _context.Employees.Add(employee);
+            await _context.SaveChangesAsync();
+
+            // _userUtils.SendEmail(createEmployeeDto.Email, employee.FirstName, createEmployeeDto.PasswordHash);
+
+            return CreatedAtAction("GetEmployee", new { id = employee.EmployeeId }, employee);
+        }
+
 
         // PUT: api/Employees/5
         [HttpPut("{id}")]

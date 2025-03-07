@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using VacationPlanner.Api.Models;
 using System.Text.Json.Serialization;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+DotNetEnv.Env.Load();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -72,8 +74,8 @@ using (var scope = app.Services.CreateScope())
     var roleSeeder = new RoleSeeder(context);
     roleSeeder.Seed();
 
-    var employeeSeeder = new EmployeeSeeder(context);
-    employeeSeeder.Seed();
+    // var employeeSeeder = new EmployeeSeeder(context);
+    // employeeSeeder.Seed();
 }
 
 app.Run();
