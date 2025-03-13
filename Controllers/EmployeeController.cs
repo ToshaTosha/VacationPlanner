@@ -70,10 +70,10 @@ namespace VacationPlanner.Api.Controllers
 
 
             // Генерация временного пароля
-            string temporaryPassword = _userUtils.GenerateTemporaryPassword();
+            // string temporaryPassword = _userUtils.GenerateTemporaryPassword();
             
             // Хэширование временного пароля
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(temporaryPassword);
+            // string passwordHash = BCrypt.Net.BCrypt.HashPassword(temporaryPassword);
 
             // Маппинг из DTO в Employee
             var employee = new Employee

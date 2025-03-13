@@ -12,7 +12,7 @@ using VacationPlanner.Api.Models;
 namespace VacationPlanner.Api.Migrations
 {
     [DbContext(typeof(VacationPlannerDbContext))]
-    [Migration("20250307110217_InitialCreate")]
+    [Migration("20250309080518_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

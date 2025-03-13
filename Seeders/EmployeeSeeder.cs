@@ -32,7 +32,7 @@ public class EmployeeSeeder
                     MiddleName = "Иванов",
                     HireDate = DateOnly.FromDateTime(new DateTime(2025, 3, 6)),
                     Email = "ivan.test@example.com",
-                    PasswordHash = "12345", 
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("12345"), 
                     IsMultipleChildren = true,
                     HasDisabledChild = true,
                     IsVeteran = true,

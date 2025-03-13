@@ -46,6 +46,7 @@ if (app.Environment.IsDevelopment())
 }
 
 DotNetEnv.Env.Load();
+app.UseCors("AllowAllOrigins");
 app.UseHttpsRedirection();
 app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
@@ -75,8 +76,8 @@ using (var scope = app.Services.CreateScope())
     var roleSeeder = new RoleSeeder(context);
     roleSeeder.Seed();
 
-    // var employeeSeeder = new EmployeeSeeder(context);
-    // employeeSeeder.Seed();
+    var employeeSeeder = new EmployeeSeeder(context);
+    employeeSeeder.Seed();
 }
 
 app.Run();

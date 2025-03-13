@@ -43,7 +43,8 @@ public class AuthController : ControllerBase
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Email, employee.Email) // Добавляем только email в claims
+            new Claim(ClaimTypes.Email, employee.Email),
+            new Claim("EmployeeId", employee.EmployeeId.ToString())
         };
 
         var key = new SymmetricSecurityKey(
