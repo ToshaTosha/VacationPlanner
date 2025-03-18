@@ -40,28 +40,29 @@ public class AuthController : ControllerBase
     }
 
     private string CreateToken(Employee employee)
+{
+    var claims = new List<Claim>
     {
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Email, employee.Email),
-            new Claim("EmployeeId", employee.EmployeeId.ToString())
-        };
+        new Claim(ClaimTypes.Email, employee.Email),
+        new Claim("EmployeeId", employee.EmployeeId.ToString()),
+        new Claim("RoleId", employee.RoleId.ToString())
+    };
 
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+    var key = new SymmetricSecurityKey(
+        Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
 
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
+    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
 
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddDays(_configuration.GetValue<double>("Jwt:ExpireDays")),
-            signingCredentials: creds
-        );
+    var token = new JwtSecurityToken(
+        issuer: _configuration["Jwt:Issuer"],
+        audience: _configuration["Jwt:Audience"],
+        claims: claims,
+        expires: DateTime.Now.AddDays(_configuration.GetValue<double>("Jwt:ExpireDays")),
+        signingCredentials: creds
+    );
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
+    return new JwtSecurityTokenHandler().WriteToken(token);
+}
 }
 
 public class UserDto
