@@ -34,6 +34,9 @@ namespace VacationPlanner.Api.Dtos
         [Required]
         public int RoleId { get; set; }
 
+        [Required]
+        public int AccumulatedVacationDays { get; set; }
+
         public bool? IsMultipleChildren { get; set; }
         public bool? HasDisabledChild { get; set; }
         public bool? IsVeteran { get; set; }

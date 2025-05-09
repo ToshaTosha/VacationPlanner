@@ -13,17 +13,46 @@ public class DepartmentSeeder
 
     public void Seed()
     {
-        if (_context.Departments.Any())
-        {
-            return; // База данных уже заполнена
-        }
+        if (_context.Departments.Any()) return;
 
         var departments = new List<Department>
         {
-            new Department { Name = "Отдел кадров", OrganizationId = 1 },
-            new Department { Name = "Финансовый отдел", OrganizationId = 1 },
-            new Department { Name = "IT-отдел", OrganizationId = 1 },
-            new Department { Name = "Маркетинг", OrganizationId = 1 },
+            new Department 
+            { 
+                Name = "Отдел кадров",
+                OrganizationId = 1,
+                
+            },
+            new Department 
+            { 
+                Name = "Финансовый отдел",
+                OrganizationId = 1,
+                
+            },
+            new Department 
+            { 
+                Name = "IT-отдел",
+                OrganizationId = 1,
+                
+            },
+            new Department 
+            { 
+                Name = "Маркетинг",
+                OrganizationId = 1,
+                
+            },
+            new Department 
+            { 
+                Name = "Отдел разработки",
+                OrganizationId = 1,
+                
+            },
+            new Department 
+            { 
+                Name = "Техническая поддержка",
+                OrganizationId = 1,
+                
+            }
         };
 
         _context.Departments.AddRange(departments);

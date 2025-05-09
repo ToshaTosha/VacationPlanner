@@ -33,12 +33,15 @@ public partial class Employee
     public string PasswordHash { get; set; } = null!;
 
     public int RoleId { get; set; }
+    
+    public int AccumulatedVacationDays { get; set; }
 
     public bool? IsMultipleChildren { get; set; }
     public bool? HasDisabledChild { get; set; }
     public bool? IsVeteran { get; set; }
     public bool? IsHonorDonor { get; set; }
 
+    // Навигационные свойства
     [ForeignKey(nameof(RoleId))]
     public virtual Role Role { get; set; } = null!;
 
@@ -47,6 +50,10 @@ public partial class Employee
 
     [ForeignKey(nameof(PositionId))]
     public virtual Position Position { get; set; } = null!;
+
+    // Обратная связь для управления отделами
+    [InverseProperty("Manager")]
+    public virtual ICollection<Department> ManagedDepartments { get; set; } = new List<Department>();
 
     public virtual ICollection<EmployeeVacationDay> EmployeeVacationDays { get; set; } = new List<EmployeeVacationDay>();
     public virtual ICollection<PlannedVacation> PlannedVacations { get; set; } = new List<PlannedVacation>();

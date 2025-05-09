@@ -1,9 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VacationPlanner.Api.Models;
 using VacationPlanner.Api.DTOs;
+using System.Security.Claims;
+
 namespace VacationPlanner.Api.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class EmployeeVacationDaysController : ControllerBase
@@ -15,13 +19,19 @@ namespace VacationPlanner.Api.Controllers
             _context = context;
         }
 
+        private int GetUserDepartmentId() => 
+            int.Parse(User.FindFirst("DepartmentId")?.Value);
+
         // GET: api/EmployeeVacationDays
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EmployeeVacationDay>>> GetEmployeeVacationDays()
         {
+            var departmentId = GetUserDepartmentId();
+            
             return await _context.EmployeeVacationDays
                 .Include(evd => evd.Employee)
                 .Include(evd => evd.VacationType)
+                .Where(evd => evd.Employee.DepartmentId == departmentId)
                 .ToListAsync();
         }
 
@@ -29,104 +39,135 @@ namespace VacationPlanner.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<EmployeeVacationDay>> GetEmployeeVacationDay(int id)
         {
+            var departmentId = GetUserDepartmentId();
+            
             var employeeVacationDay = await _context.EmployeeVacationDays
                 .Include(evd => evd.Employee)
                 .Include(evd => evd.VacationType)
                 .FirstOrDefaultAsync(evd => evd.EmployeeVacationDaysId == id);
 
-            return employeeVacationDay ?? (ActionResult<EmployeeVacationDay>)NotFound();
+            if (employeeVacationDay == null)
+                return NotFound();
+
+            if (employeeVacationDay.Employee.DepartmentId != departmentId)
+                return Forbid("Доступ к записи другого отдела запрещен");
+
+            return employeeVacationDay;
         }
 
         // POST: api/EmployeeVacationDays
         [HttpPost]
-public async Task<ActionResult<EmployeeVacationDay>> PostEmployeeVacationDay(EmployeeVacationDayDto dto)
-{
-    if (!ModelState.IsValid)
-        return BadRequest(ModelState);
+        public async Task<ActionResult<EmployeeVacationDay>> PostEmployeeVacationDay(EmployeeVacationDayDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-    if (!await _context.Employees.AnyAsync(e => e.EmployeeId == dto.EmployeeId))
-        return BadRequest("Employee not found");
+            var departmentId = GetUserDepartmentId();
+            var employee = await _context.Employees
+                .FirstOrDefaultAsync(e => e.EmployeeId == dto.EmployeeId);
 
-    if (!await _context.VacationTypes.AnyAsync(vt => vt.VacationTypeId == dto.VacationTypeId))
-        return BadRequest("VacationType not found");
+            if (employee == null || employee.DepartmentId != departmentId)
+                return BadRequest("Сотрудник не найден или принадлежит другому отделу");
 
-    if (dto.DaysCount <= 0)
-        return BadRequest("DaysCount must be positive");
+            if (!await _context.VacationTypes.AnyAsync(vt => vt.VacationTypeId == dto.VacationTypeId))
+                return BadRequest("Тип отпуска не найден");
 
-    // Создаем новый объект EmployeeVacationDay
-    var employeeVacationDay = new EmployeeVacationDay
-    {
-        EmployeeId = dto.EmployeeId,
-        VacationTypeId = dto.VacationTypeId,
-        DaysCount = dto.DaysCount
-    };
+            if (dto.StartDate > dto.EndDate)
+                return BadRequest("Дата начала должна быть раньше даты окончания");
 
-    _context.EmployeeVacationDays.Add(employeeVacationDay);
-    await _context.SaveChangesAsync();
+            var vacationDay = new EmployeeVacationDay
+            {
+                EmployeeId = dto.EmployeeId,
+                VacationTypeId = dto.VacationTypeId,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate
+            };
 
-    // Загружаем связанные объекты для возврата полного объекта
-    await _context.Entry(employeeVacationDay)
-        .Reference(evd => evd.Employee)
-        .LoadAsync();
-    await _context.Entry(employeeVacationDay)
-        .Reference(evd => evd.VacationType)
-        .LoadAsync();
+            _context.EmployeeVacationDays.Add(vacationDay);
+            await _context.SaveChangesAsync();
 
-    return CreatedAtAction("GetEmployeeVacationDay", 
-        new { id = employeeVacationDay.EmployeeVacationDaysId }, employeeVacationDay);
-}
+            return CreatedAtAction("GetEmployeeVacationDay",
+                new { id = vacationDay.EmployeeVacationDaysId }, vacationDay);
+        }
 
-// Аналогично измените метод PUT
-[HttpPut("{id}")]
-public async Task<IActionResult> PutEmployeeVacationDay(int id, EmployeeVacationDayDto dto)
-{
-    var existingRecord = await _context.EmployeeVacationDays.FindAsync(id);
-    if (existingRecord == null)
-        return NotFound();
+        // PUT: api/EmployeeVacationDays/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutEmployeeVacationDay(int id, EmployeeVacationDayDto dto)
+        {
+            var departmentId = GetUserDepartmentId();
+            var existingRecord = await _context.EmployeeVacationDays
+                .Include(evd => evd.Employee)
+                .FirstOrDefaultAsync(evd => evd.EmployeeVacationDaysId == id);
 
-    if (!ModelState.IsValid)
-        return BadRequest(ModelState);
+            if (existingRecord == null)
+                return NotFound();
 
-    if (!await _context.Employees.AnyAsync(e => e.EmployeeId == dto.EmployeeId))
-        return BadRequest("Employee not found");
+            if (existingRecord.Employee.DepartmentId != departmentId)
+                return Forbid("Нет прав для изменения записей другого отдела");
 
-    if (!await _context.VacationTypes.AnyAsync(vt => vt.VacationTypeId == dto.VacationTypeId))
-        return BadRequest("VacationType not found");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-    if (dto.DaysCount <= 0)
-        return BadRequest("DaysCount must be positive");
+            if (!await _context.VacationTypes.AnyAsync(vt => vt.VacationTypeId == dto.VacationTypeId))
+                return BadRequest("Тип отпуска не найден");
 
-    // Обновляем существующую запись
-    existingRecord.EmployeeId = dto.EmployeeId;
-    existingRecord.VacationTypeId = dto.VacationTypeId;
-    existingRecord.DaysCount = dto.DaysCount;
+            if (dto.StartDate > dto.EndDate)
+                return BadRequest("Дата начала должна быть раньше даты окончания");
 
-    try
-    {
-        await _context.SaveChangesAsync();
-    }
-    catch (DbUpdateConcurrencyException)
-    {
-        if (!EmployeeVacationDayExists(id))
-            return NotFound();
-        throw;
-    }
+            existingRecord.VacationTypeId = dto.VacationTypeId;
+            existingRecord.StartDate = dto.StartDate;
+            existingRecord.EndDate = dto.EndDate;
 
-    return NoContent();
-}
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!EmployeeVacationDayExists(id))
+                    return NotFound();
+                throw;
+            }
+
+            return NoContent();
+        }
 
         // DELETE: api/EmployeeVacationDays/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployeeVacationDay(int id)
         {
-            var employeeVacationDay = await _context.EmployeeVacationDays.FindAsync(id);
-            if (employeeVacationDay == null)
+            var departmentId = GetUserDepartmentId();
+            var vacationDay = await _context.EmployeeVacationDays
+                .Include(evd => evd.Employee)
+                .FirstOrDefaultAsync(evd => evd.EmployeeVacationDaysId == id);
+
+            if (vacationDay == null)
                 return NotFound();
 
-            _context.EmployeeVacationDays.Remove(employeeVacationDay);
+            if (vacationDay.Employee.DepartmentId != departmentId)
+                return Forbid("Нет прав для удаления записей другого отдела");
+
+            _context.EmployeeVacationDays.Remove(vacationDay);
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // GET: api/EmployeeVacationDays/department/{departmentId}
+        [Authorize(Policy = "RequireManagerRole")]
+        [HttpGet("department/{departmentId}")]
+        public async Task<ActionResult<IEnumerable<EmployeeVacationDay>>> GetEmployeeVacationDaysByDepartment(int departmentId)
+        {
+            var userDepartmentId = GetUserDepartmentId();
+            
+            if (departmentId != userDepartmentId)
+                return Forbid("Доступ к данным других отделов запрещен");
+
+            return await _context.EmployeeVacationDays
+                .Include(evd => evd.Employee)
+                .Include(evd => evd.VacationType)
+                .Where(evd => evd.Employee.DepartmentId == departmentId)
+                .ToListAsync();
         }
 
         private bool EmployeeVacationDayExists(int id)

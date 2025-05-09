@@ -33,6 +33,8 @@ public partial class VacationPlannerDbContext : DbContext
 
     public virtual DbSet<PlannedVacation> PlannedVacations { get; set; }
 
+    public DbSet<PastVacations> PastVacations { get; set; }
+
     public virtual DbSet<Position> Positions { get; set; }
 
     public virtual DbSet<Restriction> Restrictions { get; set; }
@@ -41,11 +43,19 @@ public partial class VacationPlannerDbContext : DbContext
 
     public virtual DbSet<VacationStatus> VacationStatuses { get; set; }
 
+    public DbSet<Notification> Notifications { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        modelBuilder.Entity<EmployeeVacationDay>(builder =>
+    {
+        builder.Property(evd => evd.StartDate)
+            .HasConversion(new DateOnlyConverter());
+    });
         modelBuilder.Entity<AdditionalVacationDay>(entity =>
         {
             entity.HasKey(e => e.AdditionalVacationDaysId).HasName("PK__Addition__609164D8D44CE74C");

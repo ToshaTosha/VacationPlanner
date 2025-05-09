@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
+using VacationPlanner.Api.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Загрузка переменных окружения
@@ -52,7 +53,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.MaxDepth = 128;
     });
 
@@ -101,6 +102,12 @@ builder.Services.AddDbContext<VacationPlannerDbContext>(options =>
         }));
 
     
+
+// Регистрация сервисов
+builder.Services.AddScoped<VacationPlannerDbContext>();
+builder.Services.AddScoped<VacationTransferService>(); // ✅ Scoped вместо Singleton
+builder.Services.AddSingleton<IHostedService, VacationTransferBackgroundService>();
+builder.Services.AddSingleton<IHostedService, VacationDaysUpdateService>(); // Изменено на Singleton
 
 var app = builder.Build();
 

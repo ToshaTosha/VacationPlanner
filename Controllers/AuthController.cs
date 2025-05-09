@@ -45,7 +45,8 @@ public class AuthController : ControllerBase
     {
         new Claim(ClaimTypes.Email, employee.Email),
         new Claim("EmployeeId", employee.EmployeeId.ToString()),
-        new Claim("RoleId", employee.RoleId.ToString())
+        new Claim("RoleId", employee.RoleId.ToString()),
+        new Claim("DepartmentId", employee.DepartmentId.ToString()) 
     };
 
     var key = new SymmetricSecurityKey(

@@ -22,6 +22,11 @@ public partial class Department
     [InverseProperty("Department")]
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 
+    // Навигационное свойство для руководителя
+    [ForeignKey("ManagerId")]
+    [InverseProperty("ManagedDepartments")]
+    public virtual Employee? Manager { get; set; }
+
     [ForeignKey("OrganizationId")]
     [InverseProperty("Departments")]
     public virtual Organization Organization { get; set; } = null!;

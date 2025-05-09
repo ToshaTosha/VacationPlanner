@@ -26,7 +26,9 @@ namespace VacationPlanner.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
         {
+            var userDepartmentId = int.Parse(User.FindFirst("DepartmentId")?.Value);
             return await _context.Employees
+                .Where(e => e.DepartmentId == userDepartmentId) // Фильтр по отделу
                 .Include(e => e.Department)
                 .Include(e => e.Position)
                 .Include(e => e.Role)
@@ -50,7 +52,9 @@ namespace VacationPlanner.Api.Controllers
 
         [HttpPost]
         public async Task<ActionResult<Employee>> PostEmployee(CreateEmployeeDto createEmployeeDto)
-        {
+        {   // Получаем DepartmentId из токена
+        var userDepartmentId = int.Parse(User.FindFirst("DepartmentId")?.Value);
+        createEmployeeDto.DepartmentId = userDepartmentId;
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -90,7 +94,8 @@ namespace VacationPlanner.Api.Controllers
                 IsMultipleChildren = createEmployeeDto.IsMultipleChildren,
                 HasDisabledChild = createEmployeeDto.HasDisabledChild,
                 IsVeteran = createEmployeeDto.IsVeteran,
-                IsHonorDonor = createEmployeeDto.IsHonorDonor
+                IsHonorDonor = createEmployeeDto.IsHonorDonor,
+                AccumulatedVacationDays = createEmployeeDto.AccumulatedVacationDays
             };
 
             _context.Employees.Add(employee);
@@ -156,6 +161,41 @@ namespace VacationPlanner.Api.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // Временный эндпоинт для ручного обновления накопленных дней
+        [HttpPost("update-vacation-days")]
+        public async Task<IActionResult> UpdateVacationDays()
+        {
+            try
+            {
+                var employees = await _context.Employees.ToListAsync();
+                
+                foreach (var employee in employees)
+                {
+                    var hireDate = employee.HireDate;
+                    var currentDate = DateOnly.FromDateTime(DateTime.Now);
+                    
+                    // Вычисляем количество лет, прошедших с даты трудоустройства
+                    var yearsPassed = (currentDate.Year - hireDate.Year) + ((currentDate.Month - hireDate.Month) / 12.0) + ((currentDate.Day - hireDate.Day) / 365.0);
+                    
+                    // Рассчитываем количество полугодий
+                    var halfYears = (int)(yearsPassed * 2);
+                    
+                    // Устанавливаем накопленные дни (14 дней за каждое полугодие)
+                    employee.AccumulatedVacationDays = halfYears * 14;
+                    
+                    _context.Update(employee);
+                }
+                
+                await _context.SaveChangesAsync();
+                
+                return Ok("Vacation days updated successfully");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
 
         private bool EmployeeExists(int id)

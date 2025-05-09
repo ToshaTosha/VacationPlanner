@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VacationPlanner.Api.Models;
 
@@ -11,9 +12,11 @@ using VacationPlanner.Api.Models;
 namespace VacationPlanner.Api.Migrations
 {
     [DbContext(typeof(VacationPlannerDbContext))]
-    partial class VacationPlannerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250324052510_InitialCreate1111")]
+    partial class InitialCreate1111
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,9 +55,6 @@ namespace VacationPlanner.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DepartmentId"));
 
-                    b.Property<int?>("ManagerId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -65,8 +65,6 @@ namespace VacationPlanner.Api.Migrations
 
                     b.HasKey("DepartmentId")
                         .HasName("PK__Departme__B2079BEDA328D9C5");
-
-                    b.HasIndex("ManagerId");
 
                     b.HasIndex("OrganizationId");
 
@@ -104,9 +102,6 @@ namespace VacationPlanner.Api.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EmployeeId"));
-
-                    b.Property<int>("AccumulatedVacationDays")
-                        .HasColumnType("int");
 
                     b.Property<int>("DepartmentId")
                         .HasColumnType("int");
@@ -183,16 +178,16 @@ namespace VacationPlanner.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EmployeeVacationDaysId"));
 
+                    b.Property<int>("DaysCount")
+                        .HasColumnType("int");
+
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("VacationTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
                         .HasColumnType("int");
 
                     b.HasKey("EmployeeVacationDaysId")
@@ -227,42 +222,6 @@ namespace VacationPlanner.Api.Migrations
                     b.ToTable("Holidays");
                 });
 
-            modelBuilder.Entity("VacationPlanner.Api.Models.Notification", b =>
-                {
-                    b.Property<int>("NotificationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsManagerNotification")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("RelatedVacationId")
-                        .HasColumnType("int");
-
-                    b.HasKey("NotificationId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("RelatedVacationId");
-
-                    b.ToTable("Notifications");
-                });
-
             modelBuilder.Entity("VacationPlanner.Api.Models.Organization", b =>
                 {
                     b.Property<int>("OrganizationId")
@@ -280,35 +239,6 @@ namespace VacationPlanner.Api.Migrations
                         .HasName("PK__Organiza__CADB0B12B6A1759C");
 
                     b.ToTable("Organizations");
-                });
-
-            modelBuilder.Entity("VacationPlanner.Api.Models.PastVacations", b =>
-                {
-                    b.Property<int>("PastVacationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PastVacationId"));
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date");
-
-                    b.Property<int>("VacationTypeId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PastVacationId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("VacationTypeId");
-
-                    b.ToTable("PastVacations");
                 });
 
             modelBuilder.Entity("VacationPlanner.Api.Models.PlannedVacation", b =>
@@ -451,17 +381,11 @@ namespace VacationPlanner.Api.Migrations
 
             modelBuilder.Entity("VacationPlanner.Api.Models.Department", b =>
                 {
-                    b.HasOne("VacationPlanner.Api.Models.Employee", "Manager")
-                        .WithMany("ManagedDepartments")
-                        .HasForeignKey("ManagerId");
-
                     b.HasOne("VacationPlanner.Api.Models.Organization", "Organization")
                         .WithMany("Departments")
                         .HasForeignKey("OrganizationId")
                         .IsRequired()
                         .HasConstraintName("FK__Departmen__Organ__4BAC3F29");
-
-                    b.Navigation("Manager");
 
                     b.Navigation("Organization");
                 });
@@ -531,42 +455,6 @@ namespace VacationPlanner.Api.Migrations
                     b.Navigation("VacationType");
                 });
 
-            modelBuilder.Entity("VacationPlanner.Api.Models.Notification", b =>
-                {
-                    b.HasOne("VacationPlanner.Api.Models.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VacationPlanner.Api.Models.PlannedVacation", "RelatedVacation")
-                        .WithMany()
-                        .HasForeignKey("RelatedVacationId");
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("RelatedVacation");
-                });
-
-            modelBuilder.Entity("VacationPlanner.Api.Models.PastVacations", b =>
-                {
-                    b.HasOne("VacationPlanner.Api.Models.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VacationPlanner.Api.Models.VacationType", "VacationType")
-                        .WithMany()
-                        .HasForeignKey("VacationTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("VacationType");
-                });
-
             modelBuilder.Entity("VacationPlanner.Api.Models.PlannedVacation", b =>
                 {
                     b.HasOne("VacationPlanner.Api.Models.Employee", "Employee")
@@ -604,8 +492,6 @@ namespace VacationPlanner.Api.Migrations
             modelBuilder.Entity("VacationPlanner.Api.Models.Employee", b =>
                 {
                     b.Navigation("EmployeeVacationDays");
-
-                    b.Navigation("ManagedDepartments");
 
                     b.Navigation("PlannedVacations");
                 });
